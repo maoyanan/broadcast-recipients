@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="broadcasts">
+        <item>android.intent.action.BOOT_COMPLETED</item>
+        <item>android.intent.action.MEDIA_MOUNTED</item>
+        <item>android.intent.action.QUICKBOOT_POWERON</item>
+        <item>android.intent.action.REBOOT</item>
+        <item>android.net.conn.CONNECTIVITY_CHANGE</item>
+        <item>android.intent.action.USER_PRESENT</item>
+        <item>android.intent.action.ACTION_SCREEN_ON</item>
+    </string-array>
+</resources>
