@@ -2,20 +2,15 @@ package com.letv.receiver.filter;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.TextView;
 
 import com.letv.receiver.filter.bean.BroadcastReceiverInfo;
 import com.letv.receiver.filter.bean.PersistentAppInfo;
+import com.letv.receiver.filter.utils.GetAppInfoUtils;
 
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
 public class ResultActivity extends Activity {
     private static final String TAG = "FILTER RESULT";
@@ -53,73 +48,19 @@ public class ResultActivity extends Activity {
     }
 
     private void onPersistentClick() {
-        ArrayList<PersistentAppInfo> persistentArray = getAllPersistentApp();
+        ArrayList<PersistentAppInfo> persistentArray = GetAppInfoUtils.getAllPersistentApp(this);
         Log.d(TAG, "print apps with flag Application.FLAG_PERSISTENT");
         printArray(persistentArray);
     }
 
     private void onBroadcastActionClick(String broadcastAction) {
-        ArrayList<BroadcastReceiverInfo> broadCastReceiver = getReceiversByName(broadcastAction);
+        ArrayList<BroadcastReceiverInfo> broadCastReceiver = GetAppInfoUtils.getReceiversByName(this, broadcastAction);
         Log.d(TAG, "print " + broadcastAction + " Receivers :" );
         printArray(broadCastReceiver);
     }
 
-    private ArrayList<PersistentAppInfo> getAllPersistentApp() {
-        PackageManager pm = getApplicationContext().getPackageManager();
-        List<ApplicationInfo> ail =  pm.getInstalledApplications(0);
-        ArrayList<PersistentAppInfo> persistentArray = new ArrayList<PersistentAppInfo>(10);
-        if (null != ail) {
-            int count = ail.size();
-            ApplicationInfo ai;
-            for (int i = 0; i < count; i++) {
-                ai = ail.get(i);
-                if (isPersistentApp(ai)) {
-                    PersistentAppInfo pai = new PersistentAppInfo();
-                    pai.packageName = ai.packageName;
-                    pai.isSystemApp = isSystemApp(ai);
-                    persistentArray.add(pai);
-                }
-            }
-        }
-        return persistentArray;
-    }
 
-    private ArrayList<BroadcastReceiverInfo> getReceiversByName (String broadcastAction) {
-        ArrayList<BroadcastReceiverInfo> receivers = new ArrayList<BroadcastReceiverInfo>(10);
-        Intent intent = new Intent();
-        intent.setAction(broadcastAction);
 
-        PackageManager pm = getApplicationContext().getPackageManager();
-        List<ResolveInfo> resolveInfo = pm.queryBroadcastReceivers(intent,PackageManager.GET_RESOLVED_FILTER);
-
-        int count = resolveInfo.size();
-        Log.d(TAG, "count : " + count);
-        ResolveInfo info;
-        for (int i=0; i < count; i++) {
-            info = resolveInfo.get(i);
-            if (null != info && null != info.activityInfo ) {
-                BroadcastReceiverInfo appInfo = new BroadcastReceiverInfo();
-                appInfo.packageName = info.activityInfo.packageName;
-                appInfo.receiverName = info.activityInfo.name;
-                appInfo.isSystemApp = isSystemApp(GetApplicationInfo(pm,appInfo.packageName));
-                appInfo.actions = getActions(info.filter);
-                receivers.add(appInfo);
-            }
-        }
-
-        return receivers;
-    }
-
-    private ArrayList<String> getActions(IntentFilter filter) {
-        ArrayList<String> actions = new ArrayList<String>(10);
-        if (null != filter) {
-            Iterator<String> iterator = filter.actionsIterator();
-            while (iterator.hasNext()) {
-                actions.add(iterator.next());
-            }
-        }
-        return actions;
-    }
 
     private <T> void printArray(ArrayList<T> array) {
         if (null == array || array.size() == 0) {
@@ -142,31 +83,6 @@ public class ResultActivity extends Activity {
         }
     }
 
-    private ApplicationInfo GetApplicationInfo(PackageManager pm, String packageName) {
-        ApplicationInfo ai ;
-        try {
-            ai = pm.getApplicationInfo(packageName, 0);
-        }catch (PackageManager.NameNotFoundException e) {
-            e.printStackTrace();
-            ai = null;
-        }
-        return ai;
-    }
 
 
-    private boolean isSystemApp (ApplicationInfo ai) {
-        boolean isSysApp = false;
-        if (null != ai) {
-            isSysApp = (ai.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
-        }
-        return isSysApp;
-    }
-
-    private boolean isPersistentApp(ApplicationInfo ai) {
-        boolean isPersistentApp = false;
-        if(null != ai) {
-            isPersistentApp = (ai.flags & ApplicationInfo.FLAG_PERSISTENT) != 0;
-        }
-        return isPersistentApp;
-    }
 }
